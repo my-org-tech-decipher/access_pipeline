@@ -14,8 +14,8 @@ jobs:
   grant-access:
     runs-on: ubuntu-latest
     env:
-      GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
-      OWNER: your-org-or-username
+      GITHUB_PAT: ${{ secrets.MY_PAT }}
+      OWNER: my-org-tech-decipher
 
     steps:
       - name: Grant access using GitHub API
