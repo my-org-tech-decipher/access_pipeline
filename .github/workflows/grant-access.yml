@@ -1,0 +1,28 @@
+name: Grant GitHub Access
+
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        required: true
+        description: GitHub username to grant access
+      repo:
+        required: true
+        description: Repo name
+
+jobs:
+  grant-access:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+      OWNER: your-org-or-username
+
+    steps:
+      - name: Grant access using GitHub API
+        run: |
+          echo "Granting read access to ${{ github.event.inputs.username }} on ${{ github.event.inputs.repo }}"
+          curl -s -X PUT \
+            -H "Authorization: token $GITHUB_PAT" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/$OWNER/${{ github.event.inputs.repo }}/collaborators/${{ github.event.inputs.username }} \
+            -d '{"permission":"pull"}'
