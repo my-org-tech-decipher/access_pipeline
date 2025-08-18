@@ -26,3 +26,5 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/$OWNER/${{ github.event.inputs.repo }}/collaborators/${{ github.event.inputs.username }} \
             -d '{"permission":"pull"}'
+            
+      - name: Do something else with terraform/terragrunt here
