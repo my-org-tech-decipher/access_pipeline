@@ -12,7 +12,7 @@ jobs:
           terraform -chdir=infra/aws/${{ inputs.service_id }} apply -auto-approve
 
   call_api:
-    if: ${{ startsWith(inputs.service_id, 'api.') || startsWith(inputs.service_id, 'github.') }}
+    if: ${{ startsWith(inputs.service_id, 'github.') }}
     steps:
       - run: |
           jq -r '.api_url' <<< '${{ inputs.payload_json }}' | xargs -I{} \
