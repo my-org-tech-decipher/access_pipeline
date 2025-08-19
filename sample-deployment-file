@@ -1,0 +1,20 @@
+on: { workflow_dispatch: { inputs: { service_id: {required: true}, payload_json: {required: true} } } }
+
+jobs:
+  aws_tf:
+    if: ${{ startsWith(inputs.service_id, 'aws.') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: |
+          echo '${{ inputs.payload_json }}' > terraform.tfvars.json
+          terraform -chdir=infra/aws/${{ inputs.service_id }} init
+          terraform -chdir=infra/aws/${{ inputs.service_id }} apply -auto-approve
+
+  call_api:
+    if: ${{ startsWith(inputs.service_id, 'api.') || startsWith(inputs.service_id, 'github.') }}
+    steps:
+      - run: |
+          jq -r '.api_url' <<< '${{ inputs.payload_json }}' | xargs -I{} \
+          curl -sS -X POST {} -H "Content-Type: application/json" \
+               -d '${{ inputs.payload_json }}'
