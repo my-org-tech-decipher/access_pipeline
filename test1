@@ -1,6 +1,28 @@
-{
-  "message": "Append new text",
-  "content": "<base64-of-old+new>",
-  "sha": "{{sha}}",
-  "branch": "{{branch}}"
+function b64decUtf8(b64) {
+  const bin = atob(b64.replace(/\n/g,''));
+  let out = '';
+  for (let i=0;i<bin.length;i++) out += '%' + ('00'+bin.charCodeAt(i).toString(16)).slice(-2);
+  return decodeURIComponent(out);
 }
+function b64encUtf8(str) {
+  const utf8 = unescape(encodeURIComponent(str));
+  let out=''; for (let i=0;i<utf8.length;i++) out+=String.fromCharCode(utf8.charCodeAt(i));
+  return btoa(out);
+}
+
+const res = pm.response.json();
+const sha = res.sha;
+const old = b64decUtf8(res.content);
+const append = pm.collectionVariables.get("append_text") || "";
+
+const needsNL = old.length && !old.endsWith("\n") && !append.startsWith("\n");
+const combined = old + (needsNL ? "\n" : "") + append;
+
+const payload = {
+  message: pm.collectionVariables.get("commit_message") || "Append via Postman",
+  content: b64encUtf8(combined),
+  sha: sha,
+  branch: pm.collectionVariables.get("branch")
+};
+
+pm.collectionVariables.set("payload", JSON.stringify(payload));
