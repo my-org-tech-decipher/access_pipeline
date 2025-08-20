@@ -1,5 +1,1 @@
-
-    "message": "Not Found",
-    "documentation_url": "https://docs.github.com/rest/repos/contents#create-or-update-file-contents",
-    "status": "404"
-}
+https://api.github.com/repos/{{owner}}/{{repo}}/contents/{{file_path}}?ref={{branch}}
