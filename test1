@@ -1,55 +1,5 @@
-// UTF-8 <-> base64 helpers
-function b64encodeUtf8(str) {
-  const utf8 = unescape(encodeURIComponent(str));
-  let out = '';
-  for (let i = 0; i < utf8.length; i++) out += String.fromCharCode(utf8.charCodeAt(i));
-  return btoa(out);
+
+    "message": "Not Found",
+    "documentation_url": "https://docs.github.com/rest/repos/contents#create-or-update-file-contents",
+    "status": "404"
 }
-function b64decodeUtf8(b64) {
-  const bin = atob(b64.replace(/\n/g, '')); // GitHub returns wrapped base64
-  let out = '';
-  for (let i = 0; i < bin.length; i++) out += '%' + ('00' + bin.charCodeAt(i).toString(16)).slice(-2);
-  return decodeURIComponent(out);
-}
-
-const owner  = pm.variables.get('owner');
-const repo   = pm.variables.get('repo');
-const path   = pm.variables.get('file_path');
-const branch = pm.variables.get('branch');
-const token  = pm.variables.get('github_token');
-const addTxt = pm.variables.get('append_text') || "";
-
-// 1) Read existing file to get sha + current content
-pm.sendRequest({
-  url: `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(branch)}`,
-  method: 'GET',
-  header: {
-    'Authorization': `Bearer ${token}`,
-    'Accept': 'application/vnd.github+json'
-  }
-}, (err, res) => {
-  if (err || !res) {
-    throw new Error('Failed to GET existing file: ' + (err?.message || 'unknown error'));
-  }
-  if (res.code !== 200) {
-    throw new Error(`Expected existing file (200), got ${res.code}. Make sure the file exists and branch is correct.`);
-  }
-
-  const body = res.json();
-  const sha = body.sha;
-  const current = b64decodeUtf8(body.content); // old file text
-
-  // 2) Append (ensure newline if needed)
-  const needsNewline = current.length && !current.endsWith('\n') && !addTxt.startsWith('\n');
-  const combined = current + (needsNewline ? '\n' : '') + addTxt;
-
-  // 3) Build payload for PUT (update)
-  const payloadObj = {
-    message: pm.variables.get('commit_message') || `append to ${path}`,
-    content: b64encodeUtf8(combined),
-    branch: branch,
-    sha: sha
-  };
-
-  pm.variables.set('payload', JSON.stringify(payloadObj));
-});
